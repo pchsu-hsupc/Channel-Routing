@@ -1,0 +1,11 @@
+.vscode/
+
+*.o
+
+Lab4
+
+*.pdf
+
+*.in
+
+*.out
