@@ -1,9 +1,9 @@
-#include<iostream>
-#include<fstream>
+#include <iostream>
+#include <fstream>
 #include <limits>
 #include <time.h>
 #include <cstdlib>
-
+#include "src/Channel.h"
 using namespace std;
 
 int main(int argc, char* argv[]){
@@ -17,7 +17,7 @@ int main(int argc, char* argv[]){
         exit(1);
     }
 
-    std::cout << "Hello World!" << std::endl;  
+    Channel* channel = parseChannelInstance(input);
 
     return 0;   
 }
