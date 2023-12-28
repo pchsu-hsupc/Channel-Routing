@@ -20,6 +20,21 @@ global_data = {
     'bottomboundaryID': [],
 }
 
+net_data = {}
+y_values_lookup = {}
+
+def calculate_dynamic_offset(x, net, y):
+    i = 0
+    for boundary in global_data['boundary_list']:
+        if x in range(boundary.s, boundary.e + 1) and net == global_data['topboundaryID'][x] and boundary.n[0] == 'T':
+            i = y_values_lookup[boundary.n] - y 
+            break
+        elif x in range(boundary.s, boundary.e + 1) and net == global_data['bottomboundaryID'][x] and boundary.n[0] == 'B':
+            i = y - y_values_lookup[boundary.n]
+            break
+
+    return i
+
 def parse_BoundaryList(f):
     lines = f.readlines() 
     num_lines = len(lines)
@@ -36,6 +51,7 @@ def parse_BoundaryList(f):
 
 
 def parse_NetList(f):
+    current_net = None
     for line in f:
         if 'Channel' in line:
             parts = line.split()
@@ -44,32 +60,64 @@ def parse_NetList(f):
                 track_label = f'C{i - 1}'
                 start, end = 0, 0
                 global_data['boundary_list'].append(Track(track_label, start, end))
-        elif line[0] == 'C' or line[0] == 'T' or line[0] == 'B':
+        elif 'Net' in line:
             parts = line.split()
-            global_data['net_list'].append(Track(parts[0], int(parts[1]), int(parts[2])))
+            current_net = parts[1]
+            net_data[current_net] = { 'doglegs': [], 'tracks': [] }
+        elif current_net:
+            if 'Dogleg' in line:
+                parts = line.split()
+                net_data[current_net]['doglegs'].append(Dogleg(int(parts[1])))
+            elif line[0] == 'C' or line[0] == 'T' or line[0] == 'B':
+                parts = line.split()
+                global_data['net_list'].append(Track(parts[0], int(parts[1]), int(parts[2])))
+                net_data[current_net]['tracks'].append(Track(parts[0], int(parts[1]), int(parts[2])))
 
 
 def plot():
-    y_values_lookup = {}
     for i, track in enumerate(global_data['boundary_list']):
-        plt.text(x=-0.3, y=0.5*i, s=track.n , va='center', ha='right', color='gray')
-        plt.hlines(y=0.5*i, xmin=0, xmax=10, colors='gray', linestyles=':', lw=1)
-        y_values_lookup[track.n] = 0.5*i
+        plt.text(x=-0.3, y=i, s=track.n , va='center', ha='right', color='gray')
+        plt.hlines(y=i, xmin=0, xmax=10, colors='gray', linestyles=':', lw=1)
+        y_values_lookup[track.n] = i
             
         if track.n[0] == 'T' or track.n[0] == 'B':
             boundaryIDs = global_data['topboundaryID'] if track.n[0] == 'T' else global_data['bottomboundaryID']
             text_va = 'bottom' if track.n[0] == 'T' else 'top'
-            text_offset = 0.1 if track.n[0] == 'T' else -0.1
-            plt.hlines(y=0.5*i, xmin=track.s, xmax=track.e, colors='black', lw=2)
+            text_offset = 0.1 if track.n[0] == 'T' else - 0.1
+            plt.hlines(y=i, xmin=track.s, xmax=track.e, colors='black', lw=2)
             for x in range(track.s, track.e + 1): 
-                plt.plot(x, 0.5*i, marker='o', color='black', markersize=4)
-                plt.text(x, 0.5*i + text_offset, str(boundaryIDs[x]), color='red', ha='center', va=text_va)
+                plt.plot(x, i, marker='o', color='black', markersize=4)
+                plt.text(x, i + text_offset, str(boundaryIDs[x]), color='red', ha='center', va=text_va)
     
     for i, track in enumerate(global_data['net_list']):
         if hasattr(track, 'n') and (track.n[0] == 'C'):
             plt.hlines(y=y_values_lookup[track.n], xmin=track.s, xmax=track.e, colors='blue', lw=2)
         if hasattr(track, 'n') and (track.n[0] == 'T' or track.n[0] == 'B'):
             plt.hlines(y=y_values_lookup[track.n], xmin=track.s, xmax=track.e, colors='blue', lw=2)
+
+    for net in net_data:
+        for track in net_data[net]['tracks']:
+            if hasattr(track, 'n') and track.n[0] in ('T', 'B', 'C'):
+                for x in range(track.s, track.e + 1):
+                    if net == global_data['bottomboundaryID'][x]:
+                        dynamic_offset = calculate_dynamic_offset(x, net, y_values_lookup[track.n])
+                        ymax = y_values_lookup[track.n]
+                        ymin = y_values_lookup[track.n] - dynamic_offset
+                        plt.vlines(x=x, ymin=ymin, ymax=ymax, colors='green', lw=2)
+                    elif net == global_data['topboundaryID'][x]:
+                        dynamic_offset = calculate_dynamic_offset(x, net, y_values_lookup[track.n])
+                        ymax = y_values_lookup[track.n] + dynamic_offset
+                        ymin = y_values_lookup[track.n]
+                        plt.vlines(x=x, ymin=ymin, ymax=ymax, colors='green', lw=2)
+  
+        for dogleg in net_data[net]['doglegs']:
+            for track in net_data[net]['tracks']:
+                if hasattr(track, 'n') and track.n[0] in ('T', 'B', 'C'):
+                    if track.e == dogleg.p:
+                        ymax = y_values_lookup[track.n]
+                    elif track.s == dogleg.p:
+                        ymin = y_values_lookup[track.n]
+            plt.vlines(x=dogleg.p, ymin=ymin, ymax=ymax, colors='red', lw=2)
 
     # Remove the axes
     plt.gca().spines['top'].set_visible(False)
