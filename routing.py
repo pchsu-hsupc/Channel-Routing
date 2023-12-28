@@ -9,21 +9,31 @@ class Track:
         self.n = n
         self.s = s
         self.e = e
-
 class Dogleg:
     def __init__(self, p):
         self.p = p
 
 global_data = {
     'boundary_list': [],
-    'net_list': []
+    'net_list': [],
+    'topboundaryID': [],
+    'bottomboundaryID': [],
 }
 
 def parse_BoundaryList(f):
-    for line in f:
+    lines = f.readlines() 
+    num_lines = len(lines)
+
+    for i, line in enumerate(lines):
+        line = line.strip()
         if line[0] == 'T' or line[0] == 'B':
             parts = line.split()
             global_data['boundary_list'].append(Track(parts[0], int(parts[1]), int(parts[2])))
+        elif i == num_lines - 2:
+            global_data['topboundaryID'] = line.split()
+        elif i == num_lines - 1:
+            global_data['bottomboundaryID'] = line.split()
+
 
 def parse_NetList(f):
     for line in f:
@@ -32,31 +42,33 @@ def parse_NetList(f):
             channel_density = int(parts[2])
             for i in range(channel_density + 1, 1, -1):
                 track_label = f'C{i - 1}'
-                # Example values for start and end, adjust as needed
                 start, end = 0, 0
                 global_data['boundary_list'].append(Track(track_label, start, end))
-        elif line[0] == 'C' or line[0] == 'T':
+        elif line[0] == 'C' or line[0] == 'T' or line[0] == 'B':
             parts = line.split()
             global_data['net_list'].append(Track(parts[0], int(parts[1]), int(parts[2])))
-        elif 'Dogleg' in line:
-            parts = line.split()
-            global_data['net_list'].append(Dogleg(int(parts[1])))
 
 
 def plot():
     y_values_lookup = {}
     for i, track in enumerate(global_data['boundary_list']):
-        plt.text(x=-0.1, y=0.5*i, s=track.n , va='center', ha='right', color='gray')
+        plt.text(x=-0.3, y=0.5*i, s=track.n , va='center', ha='right', color='gray')
         plt.hlines(y=0.5*i, xmin=0, xmax=10, colors='gray', linestyles=':', lw=1)
-        if track.n[0] == 'C': 
-             y_values_lookup[track.n] = 0.5*i
+        y_values_lookup[track.n] = 0.5*i
             
-
         if track.n[0] == 'T' or track.n[0] == 'B':
+            boundaryIDs = global_data['topboundaryID'] if track.n[0] == 'T' else global_data['bottomboundaryID']
+            text_va = 'bottom' if track.n[0] == 'T' else 'top'
+            text_offset = 0.1 if track.n[0] == 'T' else -0.1
             plt.hlines(y=0.5*i, xmin=track.s, xmax=track.e, colors='black', lw=2)
+            for x in range(track.s, track.e + 1): 
+                plt.plot(x, 0.5*i, marker='o', color='black', markersize=4)
+                plt.text(x, 0.5*i + text_offset, str(boundaryIDs[x]), color='red', ha='center', va=text_va)
     
     for i, track in enumerate(global_data['net_list']):
         if hasattr(track, 'n') and (track.n[0] == 'C'):
+            plt.hlines(y=y_values_lookup[track.n], xmin=track.s, xmax=track.e, colors='blue', lw=2)
+        if hasattr(track, 'n') and (track.n[0] == 'T' or track.n[0] == 'B'):
             plt.hlines(y=y_values_lookup[track.n], xmin=track.s, xmax=track.e, colors='blue', lw=2)
 
     # Remove the axes
