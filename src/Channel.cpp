@@ -60,30 +60,87 @@ void Channel::createVCG(){
     }
 }
 
+void Channel::constructTracks(){
+    /* construct availalbe intervals */
+    int Start = 0;
+    int End = NumTopTracks_;
+    for (int i = Start; i < End; i++)
+    {
+        std::string TrackName = "T" + std::to_string(i);
+        std::string LastTrackName = "T" + std::to_string(i - 1);
+        if(TracksInfo_.find(LastTrackName) != TracksInfo_.end()){
+            TracksInfo_[TrackName] = TracksInfo_[LastTrackName];
+        }
+        else{
+            std::vector<std::array<size_t, 2>> intervals;
+            intervals.push_back({0, NumPins_ - 1});
+            TracksInfo_[TrackName] = intervals;
+        }
+        for(const auto& TrackSec : TopBoundaryLine_[TrackName]){
+            updateInterval(TracksInfo_[TrackName], TrackSec);
+        }
+    }
+
+    Start = 0;
+    End = NumButtomTracks_;
+    for(int i = Start; i < End; i++){
+        std::string TrackName = "B" + std::to_string(i);
+        std::string LastTrackName = "B" + std::to_string(i - 1);
+        if(TracksInfo_.find(LastTrackName) != TracksInfo_.end()){
+            TracksInfo_[TrackName] = TracksInfo_[LastTrackName];
+        }
+        else{
+            std::vector<std::array<size_t, 2>> intervals;
+            intervals.push_back({0, NumPins_ - 1});
+            TracksInfo_[TrackName] = intervals;
+        }
+        for(const auto& TrackSec : BottomBoundaryLine_[TrackName]){
+            updateInterval(TracksInfo_[TrackName], TrackSec);
+        }
+    }
+}
+
 void Channel::allocateNet(){
     /* allocate top */
-    for(auto& Track: TopBoundaryLine_){
-        std::string TrackName = Track.first;
-        std::vector<std::array<size_t, 2>> TrackSec = Track.second;
-        for(auto& Sec: TrackSec){
-            size_t Start = Sec[0];
-            size_t End = Sec[1];
-            for(auto& Net: NetsInfo_){
-                std::string NetName = Net.first;
-                size_t NetStart = Net.second.StartPoint_.first;
-                size_t NetEnd = Net.second.EndPoint_.first;
-                if(NetStart == Start && Net.second.StartPoint_.second == 1){
-                    Net.second.TrackName_ = TrackName;
-                    break;
-                }
-                else if(NetEnd == Start && Net.second.EndPoint_.second == 1){
-                    Net.second.TrackName_ = TrackName;
-                    break;
-                }
+    size_t Start = NumTopTracks_ - 1;
+    size_t End = 0;
+    for (size_t i = Start; i < End; i++)
+    {
+        std::string TrackName = "T" + std::to_string(i);
+        if(TopBoundaryLine_.find(TrackName) != TopBoundaryLine_.end()){
+            for( const auto& TrackSec : TopBoundaryLine_[TrackName] ){
             }
         }
     }
+    
     /* allocate bottom */
+}
+
+void updateInterval(std::vector<std::array<size_t, 2>>& intervals, const std::array<size_t, 2>& TrackSec){
+    std::vector<std::array<size_t, 2>> newIntervals;
+    for(const auto& interval : intervals){
+        if(TrackSec[1] <= interval[0] || interval[1] <= TrackSec[0]){
+            newIntervals.push_back(interval);
+            continue;
+        }
+        else{
+            if(interval[0] < TrackSec[0] && TrackSec[1] < interval[1]){
+                newIntervals.push_back({interval[0], TrackSec[0] - 1});
+                newIntervals.push_back({TrackSec[1] + 1, interval[1]});
+            }
+            else if(interval[0] < TrackSec[0] && interval[1] <= TrackSec[1]){
+                newIntervals.push_back({interval[0], TrackSec[0] - 1});
+            }
+            else if(TrackSec[0] <= interval[0] && TrackSec[1] < interval[1]){
+                newIntervals.push_back({TrackSec[1] + 1, interval[1]});
+            }
+            else if(TrackSec[0] < interval[0] && interval[1] < TrackSec[1]){
+                continue;
+            }
+        }
+    }
+    std::sort(newIntervals.begin(), newIntervals.end());
+    intervals = newIntervals;
 }
 
 std::vector<std::pair<size_t, size_t>> findAllIndices(const std::vector<size_t>& vec1, const std::vector<size_t>& vec2, int value) {
@@ -132,7 +189,9 @@ Channel* parseChannelInstance(std::ifstream& input){
         channel->BottomNetIDs_.push_back(temp);
     }
     
+    channel->NumTopTracks_ = channel->TopBoundaryLine_.size();
+    channel->NumButtomTracks_ = channel->BottomBoundaryLine_.size();
+    channel->NumPins_ = channel->TopNetIDs_.size();
     input.close();
-    
     return channel;
 }

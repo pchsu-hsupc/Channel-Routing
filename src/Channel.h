@@ -7,6 +7,7 @@
 #include <utility>
 #include <fstream>
 #include <sstream>
+#include <algorithm>
 
 typedef struct NetInfo_{
     /* data */
@@ -26,8 +27,11 @@ public:
     std::vector<size_t>                                                     BottomNetIDs_;
     std::unordered_map<std::string, NetInfo>                                NetsInfo_;
     std::unordered_map<std::string, std::unordered_map<std::string, int>>   VCG_; // VCG_[n1][n2] = 1, means n1 -> n2, -1 means n1 <- n2
-    size_t                                                                  NumTracks_ = 0;
-
+    std::unordered_map<std::string, std::vector<std::array<size_t, 2>>>     TracksInfo_; // available intervals
+    size_t                                                                  NumPins_ = 0;
+    size_t                                                                  NumTopTracks_ = 0;
+    size_t                                                                  NumButtomTracks_ = 0;
+    size_t                                                                  NumAddedTracks_ = 0;
     /* member functions */
     
     /* constructor & distructor */
@@ -37,8 +41,10 @@ public:
     /* member functions */
     void createNetInfo();
     void createVCG();
+    void constructTracks();
     void allocateNet();
 };
 
 Channel* parseChannelInstance(std::ifstream& input);
 std::vector<std::pair<size_t, size_t>> findAllIndices(const std::vector<size_t>& vec1, const std::vector<size_t>& vec2, int value);
+void updateInterval(std::vector<std::array<size_t, 2>>& intervals, const std::array<size_t, 2>& TrackSec);

@@ -9,3 +9,5 @@ Lab4
 *.in
 
 *.out
+
+/input

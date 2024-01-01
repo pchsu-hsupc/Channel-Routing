@@ -20,6 +20,7 @@ int main(int argc, char* argv[]){
     Channel* channel = parseChannelInstance(input);
     channel->createNetInfo();
     channel->createVCG();
+    channel->constructTracks();
     std::cout << "Finish Line !!!!" << std::endl;
     return 0;   
 }
