@@ -21,6 +21,7 @@ int main(int argc, char* argv[]){
     channel->createNetInfo();
     channel->createVCG();
     channel->constructTracks();
+    channel->allocateNet();
     std::cout << "Finish Line !!!!" << std::endl;
     return 0;   
 }

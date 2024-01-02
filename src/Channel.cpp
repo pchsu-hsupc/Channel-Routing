@@ -24,7 +24,6 @@ void Channel::createNetInfo(){
             NetsInfo_[NetName] = netInfo;
         }
     }
-
 }
 
 void Channel::createVCG(){
@@ -101,19 +100,131 @@ void Channel::constructTracks(){
 }
 
 void Channel::allocateNet(){
-    /* allocate top */
-    size_t Start = NumTopTracks_ - 1;
-    size_t End = 0;
-    for (size_t i = Start; i < End; i++)
+    std::string TrackName;
+    size_t      watermark1;
+    size_t      watermark2;
+    std::multimap<size_t, std::string> sortedNets;
+    for(const auto& netInfo : NetsInfo_){
+        sortedNets.insert({netInfo.second.StartPoint_.first, netInfo.first});
+    }
+
+    /* fill in top tracks */
+    int Start = NumTopTracks_ - 1;
+    int End = 0;
+    for (int i = Start; i >= End; i--)
     {
-        std::string TrackName = "T" + std::to_string(i);
-        if(TopBoundaryLine_.find(TrackName) != TopBoundaryLine_.end()){
-            for( const auto& TrackSec : TopBoundaryLine_[TrackName] ){
+        TrackName = "T" + std::to_string(i);
+        if(TracksInfo_[TrackName].size() == 0) continue;
+        watermark1 = 0;
+        watermark2 = 0;
+        for (size_t i = 0; i < TracksInfo_[TrackName].size(); ++i){
+            auto& interval = TracksInfo_[TrackName][i];
+            if(interval[0] >= watermark1){
+                watermark1 = interval[0];
+                watermark2 = interval[1];
+            }
+
+            /* every net try this interval */
+            auto Net = sortedNets.begin();
+            while(Net != sortedNets.end()){
+                if( watermark1 <= NetsInfo_[Net->second].StartPoint_.first &&
+                    NetsInfo_[Net->second].EndPoint_.first <= watermark2 && 
+                    allValuesNotMinusOne(VCG_, Net->second) && 
+                    (NetsInfo_[Net->second].StartPoint_.second == 1 && NetsInfo_[Net->second].EndPoint_.second == 1) ){
+
+                    deleteEdges(VCG_, Net->second);
+                    NetsInfo_[Net->second].TrackName_ = TrackName;
+                    std::array<size_t, 2> TrackSec = {NetsInfo_[Net->second].StartPoint_.first, NetsInfo_[Net->second].EndPoint_.first};
+                    updateInterval(TracksInfo_[TrackName], TrackSec);
+                    i--;
+                    std::cout << "NetName: " << Net->second << ", TrackName: " << TrackName << std::endl;
+                    Net = sortedNets.erase(Net);
+                    break;
+                }
+                else{
+                    ++Net;
+                }
             }
         }
     }
     
-    /* allocate bottom */
+    /* fill in buttom tracks */
+    Start = NumButtomTracks_ - 1;
+    End = 0;
+    for(int i = Start; i >= End; i--){
+        TrackName = "B" + std::to_string(i);
+        if(TracksInfo_[TrackName].size() == 0) continue;
+        watermark1 = 0;
+        watermark2 = 0;
+        for (size_t i = 0; i < TracksInfo_[TrackName].size(); ++i){
+            auto& interval = TracksInfo_[TrackName][i];
+
+            if(interval[0] >= watermark1){
+                watermark1 = interval[0];
+                watermark2 = interval[1];
+            }
+
+            /* every net try this interval */
+            auto Net = sortedNets.begin();
+            while(Net != sortedNets.end()){
+                if( watermark1 <= NetsInfo_[Net->second].StartPoint_.first &&
+                    NetsInfo_[Net->second].EndPoint_.first <= watermark2 &&
+                    allValuesNotOne(VCG_, Net->second) &&  
+                    (NetsInfo_[Net->second].StartPoint_.second == 0 && NetsInfo_[Net->second].EndPoint_.second == 0) ){
+
+                    deleteEdges(VCG_, Net->second);
+                    NetsInfo_[Net->second].TrackName_ = TrackName;
+                    std::array<size_t, 2> TrackSec = {NetsInfo_[Net->second].StartPoint_.first, NetsInfo_[Net->second].EndPoint_.first};
+                    updateInterval(TracksInfo_[TrackName], TrackSec);
+                    i--;
+                    std::cout << "NetName: " << Net->second << ", TrackName: " << TrackName << std::endl;
+                    Net = sortedNets.erase(Net);
+                    break;
+                }
+                else{
+                    ++Net;
+                }
+            }
+        }
+
+    }
+}
+
+void deleteEdges(std::unordered_map<std::string, std::unordered_map<std::string, int>>& VCG, const std::string& NetName){
+    auto it = VCG.find(NetName);
+    if (it != VCG.end()) {
+        for (const auto& innerPair : it->second) {
+            VCG[innerPair.first].erase(NetName);
+        }
+        VCG.erase(NetName);
+    }
+}
+
+bool allValuesNotMinusOne(const std::unordered_map<std::string, std::unordered_map<std::string, int>>& VCG, const std::string& NetName){
+    auto it = VCG.find(NetName);
+    if (it != VCG.end()) {
+        for (const auto& innerPair : it->second) {
+            if (innerPair.second == -1) {
+                return false;
+            }
+        }
+        return true;
+    }
+    return false;
+}
+
+/* for rVCG_ to filling in buttom tracks */
+bool allValuesNotOne(const std::unordered_map<std::string, std::unordered_map<std::string, int>>& VCG, const std::string& NetName){
+    auto it = VCG.find(NetName);
+    if (it != VCG.end()) {
+        for (const auto& innerPair : it->second) {
+            if (innerPair.second == 1) {
+                return false;
+            }
+        }
+        return true;
+    }
+    return false;
 }
 
 void updateInterval(std::vector<std::array<size_t, 2>>& intervals, const std::array<size_t, 2>& TrackSec){
