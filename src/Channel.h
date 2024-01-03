@@ -52,3 +52,4 @@ bool allValuesNotMinusOne(const std::unordered_map<std::string, std::unordered_m
 bool allValuesNotOne(const std::unordered_map<std::string, std::unordered_map<std::string, int>>& VCG, const std::string& NetName);
 std::vector<std::pair<size_t, size_t>> findAllIndices(const std::vector<size_t>& vec1, const std::vector<size_t>& vec2, int value);
 void updateInterval(std::vector<std::array<size_t, 2>>& intervals, const std::array<size_t, 2>& TrackSec);
+bool checkSameNetSeries(std::string NetName1, std::string NetName2);

@@ -101,6 +101,7 @@ void Channel::constructTracks(){
 
 void Channel::allocateNet(){
     std::string TrackName;
+    std::string prevNet;
     size_t      watermark1;
     size_t      watermark2;
     std::multimap<size_t, std::string> sortedNets;
@@ -211,13 +212,30 @@ void Channel::allocateNet(){
             while(Net != sortedNets.end()){
                 if( watermark1 <= NetsInfo_[Net->second].StartPoint_.first &&
                     NetsInfo_[Net->second].EndPoint_.first <= watermark2 &&
-                    allValuesNotMinusOne(VCG_, Net->second) ){
+                    allValuesNotMinusOne(VCG_, Net->second) 
+                    ){
 
                     deleteEdges(VCG_, Net->second);
                     NetsInfo_[Net->second].TrackName_ = TrackName;
                     std::array<size_t, 2> TrackSec = {NetsInfo_[Net->second].StartPoint_.first, NetsInfo_[Net->second].EndPoint_.first};
                     updateInterval(TracksInfo_[TrackName], TrackSec);
                     i--;
+                    prevNet = Net->second;
+                    std::cout << "NetName: " << Net->second << ", TrackName: " << TrackName << std::endl;
+                    Net = sortedNets.erase(Net);
+                    break;
+                }
+                else if( watermark1 - 1 <= NetsInfo_[Net->second].StartPoint_.first &&
+                         NetsInfo_[Net->second].EndPoint_.first <= watermark2 &&
+                         allValuesNotMinusOne(VCG_, Net->second) && 
+                         checkSameNetSeries(prevNet, Net->second)
+                        ){
+                    deleteEdges(VCG_, Net->second);
+                    NetsInfo_[Net->second].TrackName_ = TrackName;
+                    std::array<size_t, 2> TrackSec = {NetsInfo_[Net->second].StartPoint_.first, NetsInfo_[Net->second].EndPoint_.first};
+                    updateInterval(TracksInfo_[TrackName], TrackSec);
+                    i--;
+                    prevNet = Net->second;
                     std::cout << "NetName: " << Net->second << ", TrackName: " << TrackName << std::endl;
                     Net = sortedNets.erase(Net);
                     break;
@@ -229,6 +247,15 @@ void Channel::allocateNet(){
         }
         Count++;
     }
+}
+
+bool checkSameNetSeries(std::string NetName1, std::string NetName2){
+    char NetSeries1 = NetName1[0];
+    char NetSeries2 = NetName2[0];
+    if(NetSeries1 == NetSeries2){
+        return true;
+    }
+    return false;
 }
 
 void deleteEdges(std::unordered_map<std::string, std::unordered_map<std::string, int>>& VCG, const std::string& NetName){
@@ -271,7 +298,7 @@ bool allValuesNotOne(const std::unordered_map<std::string, std::unordered_map<st
 void updateInterval(std::vector<std::array<size_t, 2>>& intervals, const std::array<size_t, 2>& TrackSec){
     std::vector<std::array<size_t, 2>> newIntervals;
     for(const auto& interval : intervals){
-        if(TrackSec[1] <= interval[0] || interval[1] <= TrackSec[0]){
+        if(TrackSec[1] < interval[0] || interval[1] < TrackSec[0]){
             newIntervals.push_back(interval);
             continue;
         }
@@ -285,9 +312,6 @@ void updateInterval(std::vector<std::array<size_t, 2>>& intervals, const std::ar
             }
             else if(TrackSec[0] <= interval[0] && TrackSec[1] < interval[1]){
                 newIntervals.push_back({TrackSec[1] + 1, interval[1]});
-            }
-            else if(TrackSec[0] < interval[0] && interval[1] < TrackSec[1]){
-                continue;
             }
         }
     }
