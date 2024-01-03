@@ -186,7 +186,48 @@ void Channel::allocateNet(){
                 }
             }
         }
+    }
 
+    /* fill in added tracks */
+    size_t Count = 1;
+    while (sortedNets.size() != 0)
+    {
+        TrackName = "C" + std::to_string(Count);
+        std::vector<std::array<size_t, 2>> intervals;
+        intervals.push_back({0, TopNetIDs_.size() - 1});
+        TracksInfo_[TrackName] = intervals;
+        watermark1 = 0;
+        watermark2 = 0;
+        for (size_t i = 0; i < TracksInfo_[TrackName].size(); ++i){
+            auto& interval = TracksInfo_[TrackName][i];
+
+            if(interval[0] >= watermark1){
+                watermark1 = interval[0];
+                watermark2 = interval[1];
+            }
+
+            /* every net try this interval */
+            auto Net = sortedNets.begin();
+            while(Net != sortedNets.end()){
+                if( watermark1 <= NetsInfo_[Net->second].StartPoint_.first &&
+                    NetsInfo_[Net->second].EndPoint_.first <= watermark2 &&
+                    allValuesNotMinusOne(VCG_, Net->second) ){
+
+                    deleteEdges(VCG_, Net->second);
+                    NetsInfo_[Net->second].TrackName_ = TrackName;
+                    std::array<size_t, 2> TrackSec = {NetsInfo_[Net->second].StartPoint_.first, NetsInfo_[Net->second].EndPoint_.first};
+                    updateInterval(TracksInfo_[TrackName], TrackSec);
+                    i--;
+                    std::cout << "NetName: " << Net->second << ", TrackName: " << TrackName << std::endl;
+                    Net = sortedNets.erase(Net);
+                    break;
+                }
+                else{
+                    ++Net;
+                }
+            }
+        }
+        Count++;
     }
 }
 
