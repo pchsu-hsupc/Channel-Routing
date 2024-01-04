@@ -22,6 +22,7 @@ int main(int argc, char* argv[]){
     channel->createVCG();
     channel->constructTracks();
     channel->allocateNet();
+    outputRoutingResult(output, channel);
     std::cout << "Finish Line !!!!" << std::endl;
     return 0;   
 }

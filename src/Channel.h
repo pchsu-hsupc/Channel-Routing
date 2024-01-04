@@ -30,6 +30,7 @@ public:
     std::unordered_map<std::string, std::unordered_map<std::string, int>>   VCG_; // VCG_[n1][n2] = 1, means n1 -> n2, -1 means n1 <- n2
     std::unordered_map<std::string, std::vector<std::array<size_t, 2>>>     TracksInfo_; // available intervals
     size_t                                                                  NumPins_ = 0;
+    size_t                                                                  NumNets_ = 0;
     size_t                                                                  NumTopTracks_ = 0;
     size_t                                                                  NumButtomTracks_ = 0;
     size_t                                                                  NumAddedTracks_ = 0;
@@ -47,9 +48,11 @@ public:
 };
 
 Channel* parseChannelInstance(std::ifstream& input);
+void outputRoutingResult(std::ofstream& output, Channel* channel);
 void deleteEdges(std::unordered_map<std::string, std::unordered_map<std::string, int>>& VCG, const std::string& NetName);
 bool allValuesNotMinusOne(const std::unordered_map<std::string, std::unordered_map<std::string, int>>& VCG, const std::string& NetName);
 bool allValuesNotOne(const std::unordered_map<std::string, std::unordered_map<std::string, int>>& VCG, const std::string& NetName);
 std::vector<std::pair<size_t, size_t>> findAllIndices(const std::vector<size_t>& vec1, const std::vector<size_t>& vec2, int value);
 void updateInterval(std::vector<std::array<size_t, 2>>& intervals, const std::array<size_t, 2>& TrackSec);
-bool checkSameNetSeries(std::string NetName1, std::string NetName2);
+std::vector<std::string> extractSameSeriesNames(const std::unordered_map<std::string, NetInfo>& NetsInfo, const std::string& series);
+bool checkSameNetSeries(const std::string& NetName1, const std::string& NetName2);

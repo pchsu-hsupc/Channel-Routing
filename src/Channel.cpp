@@ -16,13 +16,14 @@ void Channel::createNetInfo(){
         for(size_t i = 0; i <= indices.size() - 2; i++){
             std::string NetName = std::to_string(n);
             if(indices.size() > 2){
-                NetName += (char)('a' + i);
+                NetName += "_" + std::to_string(i + 1);
             }
             NetInfo netInfo;
             netInfo.StartPoint_ = indices[i];
             netInfo.EndPoint_ = indices[i + 1];
             NetsInfo_[NetName] = netInfo;
         }
+        NumNets_++;
     }
 }
 
@@ -130,15 +131,13 @@ void Channel::allocateNet(){
             while(Net != sortedNets.end()){
                 if( watermark1 <= NetsInfo_[Net->second].StartPoint_.first &&
                     NetsInfo_[Net->second].EndPoint_.first <= watermark2 && 
-                    allValuesNotMinusOne(VCG_, Net->second) && 
-                    (NetsInfo_[Net->second].StartPoint_.second == 1 && NetsInfo_[Net->second].EndPoint_.second == 1) ){
+                    allValuesNotMinusOne(VCG_, Net->second) ){
 
                     deleteEdges(VCG_, Net->second);
                     NetsInfo_[Net->second].TrackName_ = TrackName;
                     std::array<size_t, 2> TrackSec = {NetsInfo_[Net->second].StartPoint_.first, NetsInfo_[Net->second].EndPoint_.first};
                     updateInterval(TracksInfo_[TrackName], TrackSec);
                     i--;
-                    std::cout << "NetName: " << Net->second << ", TrackName: " << TrackName << std::endl;
                     Net = sortedNets.erase(Net);
                     break;
                 }
@@ -170,15 +169,13 @@ void Channel::allocateNet(){
             while(Net != sortedNets.end()){
                 if( watermark1 <= NetsInfo_[Net->second].StartPoint_.first &&
                     NetsInfo_[Net->second].EndPoint_.first <= watermark2 &&
-                    allValuesNotOne(VCG_, Net->second) &&  
-                    (NetsInfo_[Net->second].StartPoint_.second == 0 && NetsInfo_[Net->second].EndPoint_.second == 0) ){
+                    allValuesNotOne(VCG_, Net->second) ){
 
                     deleteEdges(VCG_, Net->second);
                     NetsInfo_[Net->second].TrackName_ = TrackName;
                     std::array<size_t, 2> TrackSec = {NetsInfo_[Net->second].StartPoint_.first, NetsInfo_[Net->second].EndPoint_.first};
                     updateInterval(TracksInfo_[TrackName], TrackSec);
                     i--;
-                    std::cout << "NetName: " << Net->second << ", TrackName: " << TrackName << std::endl;
                     Net = sortedNets.erase(Net);
                     break;
                 }
@@ -190,9 +187,10 @@ void Channel::allocateNet(){
     }
 
     /* fill in added tracks */
-    size_t Count = 1;
+    size_t Count = 0;
     while (sortedNets.size() != 0)
     {
+        Count++;
         TrackName = "C" + std::to_string(Count);
         std::vector<std::array<size_t, 2>> intervals;
         intervals.push_back({0, TopNetIDs_.size() - 1});
@@ -221,7 +219,6 @@ void Channel::allocateNet(){
                     updateInterval(TracksInfo_[TrackName], TrackSec);
                     i--;
                     prevNet = Net->second;
-                    std::cout << "NetName: " << Net->second << ", TrackName: " << TrackName << std::endl;
                     Net = sortedNets.erase(Net);
                     break;
                 }
@@ -236,7 +233,6 @@ void Channel::allocateNet(){
                     updateInterval(TracksInfo_[TrackName], TrackSec);
                     i--;
                     prevNet = Net->second;
-                    std::cout << "NetName: " << Net->second << ", TrackName: " << TrackName << std::endl;
                     Net = sortedNets.erase(Net);
                     break;
                 }
@@ -245,17 +241,19 @@ void Channel::allocateNet(){
                 }
             }
         }
-        Count++;
     }
+    NumAddedTracks_ = Count;
 }
 
-bool checkSameNetSeries(std::string NetName1, std::string NetName2){
-    char NetSeries1 = NetName1[0];
-    char NetSeries2 = NetName2[0];
-    if(NetSeries1 == NetSeries2){
-        return true;
+bool checkSameNetSeries(const std::string& NetName1, const std::string& NetName2) {
+    size_t pos1 = NetName1.find("_");
+    size_t pos2 = NetName2.find("_");
+
+    if (pos1 == std::string::npos || pos2 == std::string::npos) {
+        return false;
     }
-    return false;
+
+    return NetName1.substr(0, pos1) == NetName2.substr(0, pos2);
 }
 
 void deleteEdges(std::unordered_map<std::string, std::unordered_map<std::string, int>>& VCG, const std::string& NetName){
@@ -370,4 +368,82 @@ Channel* parseChannelInstance(std::ifstream& input){
     channel->NumPins_ = channel->TopNetIDs_.size();
     input.close();
     return channel;
+}
+
+std::vector<std::string> extractSameSeriesNames(const std::unordered_map<std::string, NetInfo>& NetsInfo, const std::string& series) {
+    std::vector<std::string> result;
+
+    for (const auto& pair : NetsInfo) {
+        size_t pos = pair.first.find('_');
+        if (pos != std::string::npos) {
+            std::string currentSeries = pair.first.substr(0, pos);
+            if (currentSeries == series) {
+                result.push_back(pair.first);
+            }
+        }
+        else{
+            if(pair.first == series){
+                result.push_back(pair.first);
+                break;
+            }
+        }
+    }
+
+    return result;
+}
+
+void outputRoutingResult(std::ofstream& output, Channel* channel){
+
+    std::vector<std::string> sameSeriesNets;
+    std::vector<size_t> DogLegs;
+    std::vector<NetInfo> NetSecInfos;
+    NetInfo NetSecInfo;
+
+    output << "Channel density: " << channel->NumAddedTracks_ << std::endl;
+    for(size_t i = 1; i <= channel->NumNets_; ++i){
+        std::string NetSeries = std::to_string(i);
+        output << "Net " << NetSeries << std::endl;
+        sameSeriesNets = extractSameSeriesNames(channel->NetsInfo_, NetSeries);
+        std::sort(sameSeriesNets.begin(), sameSeriesNets.end(),
+        [](const std::string& a, const std::string& b) {
+            size_t posA = a.find('_');
+            size_t posB = b.find('_');
+            int numA = std::stoi(a.substr(posA + 1));
+            int numB = std::stoi(b.substr(posB + 1));
+            return numA < numB;
+        });
+
+        NetSecInfos.clear();
+        NetSecInfo.TrackName_ = "";
+        DogLegs.clear();
+        for(const auto& Net : sameSeriesNets){
+            if(NetSecInfo.TrackName_ != channel->NetsInfo_.at(Net).TrackName_){
+                if(NetSecInfo.TrackName_ != ""){
+                    if(NetSecInfo.TrackName_[0] == 'C'){
+                        NetSecInfo.TrackName_ = "C" + std::to_string(channel->NumAddedTracks_ - std::stoi(NetSecInfo.TrackName_.substr(1)) + 1);
+                    }
+                    NetSecInfos.push_back(NetSecInfo);
+                    DogLegs.push_back(NetSecInfo.EndPoint_.first);
+                }
+                NetSecInfo.TrackName_ = channel->NetsInfo_.at(Net).TrackName_;
+                NetSecInfo.StartPoint_ = channel->NetsInfo_.at(Net).StartPoint_;
+                NetSecInfo.EndPoint_ = channel->NetsInfo_.at(Net).EndPoint_;
+            }
+            else{
+                NetSecInfo.EndPoint_ = channel->NetsInfo_.at(Net).EndPoint_;
+            }
+        }
+        if(NetSecInfo.TrackName_[0] == 'C'){
+            NetSecInfo.TrackName_ = "C" + std::to_string(channel->NumAddedTracks_ - std::stoi(NetSecInfo.TrackName_.substr(1)) + 1);
+        }
+        NetSecInfos.push_back(NetSecInfo);
+
+        for(const auto& Sec: NetSecInfos){
+            output << Sec.TrackName_ << " " << Sec.StartPoint_.first << " " << Sec.EndPoint_.first << std::endl;
+        }
+
+        for(const auto& DogLeg : DogLegs){
+            output << "Dogleg " << DogLeg << std::endl;
+        }
+    }
 }
