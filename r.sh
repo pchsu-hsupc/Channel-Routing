@@ -1,3 +1,3 @@
 make clean
 make
-./Lab4 ./input/input0.in ./output/output0.out
+./Lab4 ./input/input4.in ./output/output4.out

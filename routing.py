@@ -78,19 +78,26 @@ def parse_NetList(f):
                 net_data[current_net]['tracks'].append(Track(parts[0], int(parts[1]), int(parts[2])))
 
 def plot(number):
+    plt.figure(figsize=(20, 20))
+    y_cord = 0
     for i, track in enumerate(global_data['boundary_list']):
-        plt.text(x=-0.3, y=i, s=track.n , va='center', ha='right', color='gray', size=7)
-        plt.hlines(y=i, xmin=0, xmax=global_data['max_length'], colors='gray', linestyles=':', lw=1)
-        y_values_lookup[track.n] = i
+        if track.n not in y_values_lookup:
+            plt.text(x=-0.3, y=y_cord, s=track.n , va='center', ha='right', color='gray', size=7)
+            plt.hlines(y=y_cord, xmin=0, xmax=global_data['max_length'], colors='gray', linestyles=':', lw=1)
+            y_values_lookup[track.n] = y_cord
+            h = y_cord
+            y_cord += 20
+        else:
+            h = y_values_lookup[track.n]
             
         if track.n[0] == 'T' or track.n[0] == 'B':
             boundaryIDs = global_data['topboundaryID'] if track.n[0] == 'T' else global_data['bottomboundaryID']
             text_va = 'bottom' if track.n[0] == 'T' else 'top'
             text_offset = 0.1 if track.n[0] == 'T' else - 0.2
-            plt.hlines(y=i, xmin=track.s, xmax=track.e, colors='black', lw=2)
+            plt.hlines(y=h, xmin=track.s, xmax=track.e, colors='black', lw=2)
             for x in range(track.s, track.e + 1): 
-                plt.plot(x, i, marker='o', color='black', markersize=4)
-                plt.text(x, i + text_offset, str(boundaryIDs[x]), color='red', ha='center', va=text_va, size=6)
+                plt.plot(x, h, marker='o', color='black', markersize=4)
+                plt.text(x, h + text_offset, str(boundaryIDs[x]), color='red', ha='center', va=text_va, size=6)
     
     for i, track in enumerate(global_data['net_list']):
         if hasattr(track, 'n') and (track.n[0] == 'C'):
@@ -134,7 +141,7 @@ def plot(number):
 
     figures_dir = os.path.join(os.path.dirname(__file__), 'figures')
     os.makedirs(figures_dir, exist_ok=True)
-    plt.savefig(os.path.join(figures_dir, f'plot{number}.png'))
+    plt.savefig(os.path.join(figures_dir, f'plot{number}.png'), dpi=800)
 
 def sort_tracks(track):
     prefix = track.n[0]

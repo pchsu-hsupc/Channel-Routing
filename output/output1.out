@@ -1,0 +1,57 @@
+Channel density: 20
+Net 1
+C20 0 21
+C5 21 26
+Dogleg 21
+Net 2
+C10 14 17
+Net 3
+C19 7 26
+Net 4
+C14 13 27
+Net 5
+C17 4 25
+Net 6
+C11 8 11
+Net 7
+C11 12 20
+C18 20 22
+Dogleg 20
+Net 8
+C2 15 24
+Net 9
+C19 0 6
+C14 6 10
+Dogleg 6
+Net 10
+C16 5 19
+Net 11
+C12 6 16
+Net 12
+C1 3 24
+Net 13
+C16 1 4
+C13 4 19
+Dogleg 4
+Net 14
+C18 3 15
+C3 15 22
+Dogleg 15
+Net 15
+C8 10 27
+Net 16
+C5 14 20
+Net 17
+C10 2 12
+C6 12 23
+Dogleg 12
+Net 18
+C7 11 28
+Net 19
+C15 5 18
+C4 18 21
+Dogleg 18
+Net 20
+C9 1 25
+C16 25 28
+Dogleg 25

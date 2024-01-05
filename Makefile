@@ -1,6 +1,6 @@
 CXX = g++
 # CXXFLAGS = -std=c++11 -g -O3
-CXXFLAGS = -std=c++11 -g
+CXXFLAGS = -std=c++11 -g -pg
 TARGET = Lab4
 SRCDIR = src
 OBJS = main.o Channel.o # Add your other object files here

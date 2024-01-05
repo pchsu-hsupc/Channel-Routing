@@ -276,7 +276,7 @@ bool allValuesNotMinusOne(const std::unordered_map<std::string, std::unordered_m
         }
         return true;
     }
-    return false;
+    return true;
 }
 
 /* for rVCG_ to filling in buttom tracks */
@@ -290,7 +290,7 @@ bool allValuesNotOne(const std::unordered_map<std::string, std::unordered_map<st
         }
         return true;
     }
-    return false;
+    return true;
 }
 
 void updateInterval(std::vector<std::array<size_t, 2>>& intervals, const std::array<size_t, 2>& TrackSec){
