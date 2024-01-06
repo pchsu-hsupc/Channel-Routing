@@ -93,7 +93,7 @@ def plot(number):
         if track.n[0] == 'T' or track.n[0] == 'B':
             boundaryIDs = global_data['topboundaryID'] if track.n[0] == 'T' else global_data['bottomboundaryID']
             text_va = 'bottom' if track.n[0] == 'T' else 'top'
-            text_offset = 0.1 if track.n[0] == 'T' else - 0.2
+            text_offset = 3 if track.n[0] == 'T' else - 3
             plt.hlines(y=h, xmin=track.s, xmax=track.e, colors='black', lw=2)
             for x in range(track.s, track.e + 1): 
                 plt.plot(x, h, marker='o', color='black', markersize=4)

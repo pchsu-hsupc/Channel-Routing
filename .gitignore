@@ -7,3 +7,7 @@ Lab4
 *.pdf
 
 *.txt
+
+*tar
+
+/testcase

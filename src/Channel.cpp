@@ -395,7 +395,6 @@ std::vector<std::string> extractSameSeriesNames(const std::unordered_map<std::st
 void outputRoutingResult(std::ofstream& output, Channel* channel){
 
     std::vector<std::string> sameSeriesNets;
-    std::vector<size_t> DogLegs;
     std::vector<NetInfo> NetSecInfos;
     NetInfo NetSecInfo;
 
@@ -415,7 +414,7 @@ void outputRoutingResult(std::ofstream& output, Channel* channel){
 
         NetSecInfos.clear();
         NetSecInfo.TrackName_ = "";
-        DogLegs.clear();
+
         for(const auto& Net : sameSeriesNets){
             if(NetSecInfo.TrackName_ != channel->NetsInfo_.at(Net).TrackName_){
                 if(NetSecInfo.TrackName_ != ""){
@@ -423,7 +422,6 @@ void outputRoutingResult(std::ofstream& output, Channel* channel){
                         NetSecInfo.TrackName_ = "C" + std::to_string(channel->NumAddedTracks_ - std::stoi(NetSecInfo.TrackName_.substr(1)) + 1);
                     }
                     NetSecInfos.push_back(NetSecInfo);
-                    DogLegs.push_back(NetSecInfo.EndPoint_.first);
                 }
                 NetSecInfo.TrackName_ = channel->NetsInfo_.at(Net).TrackName_;
                 NetSecInfo.StartPoint_ = channel->NetsInfo_.at(Net).StartPoint_;
@@ -438,12 +436,11 @@ void outputRoutingResult(std::ofstream& output, Channel* channel){
         }
         NetSecInfos.push_back(NetSecInfo);
 
+        NetInfo prevSec;
         for(const auto& Sec: NetSecInfos){
             output << Sec.TrackName_ << " " << Sec.StartPoint_.first << " " << Sec.EndPoint_.first << std::endl;
-        }
-
-        for(const auto& DogLeg : DogLegs){
-            output << "Dogleg " << DogLeg << std::endl;
+            if(prevSec.TrackName_ != "") output << "Dogleg " << prevSec.EndPoint_.first << std::endl;
+            prevSec = Sec;
         }
     }
 }
