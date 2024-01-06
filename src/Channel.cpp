@@ -77,7 +77,7 @@ void Channel::constructTracks(){
             TracksInfo_[TrackName] = intervals;
         }
         for(const auto& TrackSec : TopBoundaryLine_[TrackName]){
-            updateInterval(TracksInfo_[TrackName], TrackSec);
+            bool temp = updateInterval(TracksInfo_[TrackName], TrackSec);
         }
     }
 
@@ -95,7 +95,7 @@ void Channel::constructTracks(){
             TracksInfo_[TrackName] = intervals;
         }
         for(const auto& TrackSec : BottomBoundaryLine_[TrackName]){
-            updateInterval(TracksInfo_[TrackName], TrackSec);
+            bool temp = updateInterval(TracksInfo_[TrackName], TrackSec);
         }
     }
 }
@@ -136,8 +136,7 @@ void Channel::allocateNet(){
                     deleteEdges(VCG_, Net->second);
                     NetsInfo_[Net->second].TrackName_ = TrackName;
                     std::array<size_t, 2> TrackSec = {NetsInfo_[Net->second].StartPoint_.first, NetsInfo_[Net->second].EndPoint_.first};
-                    updateInterval(TracksInfo_[TrackName], TrackSec);
-                    i--;
+                    if(!updateInterval(TracksInfo_[TrackName], TrackSec)) i--;
                     Net = sortedNets.erase(Net);
                     break;
                 }
@@ -174,8 +173,7 @@ void Channel::allocateNet(){
                     deleteEdges(VCG_, Net->second);
                     NetsInfo_[Net->second].TrackName_ = TrackName;
                     std::array<size_t, 2> TrackSec = {NetsInfo_[Net->second].StartPoint_.first, NetsInfo_[Net->second].EndPoint_.first};
-                    updateInterval(TracksInfo_[TrackName], TrackSec);
-                    i--;
+                    if(!updateInterval(TracksInfo_[TrackName], TrackSec)) i--;
                     Net = sortedNets.erase(Net);
                     break;
                 }
@@ -216,8 +214,7 @@ void Channel::allocateNet(){
                     deleteEdges(VCG_, Net->second);
                     NetsInfo_[Net->second].TrackName_ = TrackName;
                     std::array<size_t, 2> TrackSec = {NetsInfo_[Net->second].StartPoint_.first, NetsInfo_[Net->second].EndPoint_.first};
-                    updateInterval(TracksInfo_[TrackName], TrackSec);
-                    i--;
+                    if(!updateInterval(TracksInfo_[TrackName], TrackSec)) i--;
                     prevNet = Net->second;
                     Net = sortedNets.erase(Net);
                     break;
@@ -230,8 +227,7 @@ void Channel::allocateNet(){
                     deleteEdges(VCG_, Net->second);
                     NetsInfo_[Net->second].TrackName_ = TrackName;
                     std::array<size_t, 2> TrackSec = {NetsInfo_[Net->second].StartPoint_.first, NetsInfo_[Net->second].EndPoint_.first};
-                    updateInterval(TracksInfo_[TrackName], TrackSec);
-                    i--;
+                    if(!updateInterval(TracksInfo_[TrackName], TrackSec)) i--;
                     prevNet = Net->second;
                     Net = sortedNets.erase(Net);
                     break;
@@ -252,7 +248,6 @@ bool checkSameNetSeries(const std::string& NetName1, const std::string& NetName2
     if (pos1 == std::string::npos || pos2 == std::string::npos) {
         return false;
     }
-
     return NetName1.substr(0, pos1) == NetName2.substr(0, pos2);
 }
 
@@ -293,7 +288,8 @@ bool allValuesNotOne(const std::unordered_map<std::string, std::unordered_map<st
     return true;
 }
 
-void updateInterval(std::vector<std::array<size_t, 2>>& intervals, const std::array<size_t, 2>& TrackSec){
+bool updateInterval(std::vector<std::array<size_t, 2>>& intervals, const std::array<size_t, 2>& TrackSec){
+    bool isBigger = false;
     std::vector<std::array<size_t, 2>> newIntervals;
     for(const auto& interval : intervals){
         if(TrackSec[1] < interval[0] || interval[1] < TrackSec[0]){
@@ -304,6 +300,7 @@ void updateInterval(std::vector<std::array<size_t, 2>>& intervals, const std::ar
             if(interval[0] < TrackSec[0] && TrackSec[1] < interval[1]){
                 newIntervals.push_back({interval[0], TrackSec[0] - 1});
                 newIntervals.push_back({TrackSec[1] + 1, interval[1]});
+                isBigger = true;
             }
             else if(interval[0] < TrackSec[0] && interval[1] <= TrackSec[1]){
                 newIntervals.push_back({interval[0], TrackSec[0] - 1});
@@ -315,6 +312,7 @@ void updateInterval(std::vector<std::array<size_t, 2>>& intervals, const std::ar
     }
     std::sort(newIntervals.begin(), newIntervals.end());
     intervals = newIntervals;
+    return isBigger;
 }
 
 std::vector<std::pair<size_t, size_t>> findAllIndices(const std::vector<size_t>& vec1, const std::vector<size_t>& vec2, int value) {
