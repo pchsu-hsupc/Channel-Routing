@@ -78,7 +78,7 @@ def parse_NetList(f):
                 net_data[current_net]['tracks'].append(Track(parts[0], int(parts[1]), int(parts[2])))
 
 def plot(number):
-    plt.figure(figsize=(20, 20))
+    plt.figure(figsize=(40, 32))
     y_cord = 0
     for i, track in enumerate(global_data['boundary_list']):
         if track.n not in y_values_lookup:

@@ -140,6 +140,19 @@ void Channel::allocateNet(){
                     Net = sortedNets.erase(Net);
                     break;
                 }
+                else if( watermark1 - 1 <= NetsInfo_[Net->second].StartPoint_.first &&
+                         NetsInfo_[Net->second].EndPoint_.first <= watermark2 &&
+                         checkSameNetSeries(prevNet, Net->second) &&
+                         allValuesNotMinusOne(VCG_, Net->second) 
+                        ){
+                    deleteEdges(VCG_, Net->second);
+                    NetsInfo_[Net->second].TrackName_ = TrackName;
+                    std::array<size_t, 2> TrackSec = {NetsInfo_[Net->second].StartPoint_.first, NetsInfo_[Net->second].EndPoint_.first};
+                    if(!updateInterval(TracksInfo_[TrackName], TrackSec)) i--;
+                    prevNet = Net->second;
+                    Net = sortedNets.erase(Net);
+                    break;
+                }
                 else{
                     ++Net;
                 }
@@ -177,6 +190,19 @@ void Channel::allocateNet(){
                     Net = sortedNets.erase(Net);
                     break;
                 }
+                else if( watermark1 - 1 <= NetsInfo_[Net->second].StartPoint_.first &&
+                         NetsInfo_[Net->second].EndPoint_.first <= watermark2 &&
+                         checkSameNetSeries(prevNet, Net->second) &&
+                         allValuesNotOne(VCG_, Net->second)
+                        ){
+                    deleteEdges(VCG_, Net->second);
+                    NetsInfo_[Net->second].TrackName_ = TrackName;
+                    std::array<size_t, 2> TrackSec = {NetsInfo_[Net->second].StartPoint_.first, NetsInfo_[Net->second].EndPoint_.first};
+                    if(!updateInterval(TracksInfo_[TrackName], TrackSec)) i--;
+                    prevNet = Net->second;
+                    Net = sortedNets.erase(Net);
+                    break;
+                }
                 else{
                     ++Net;
                 }
@@ -209,6 +235,7 @@ void Channel::allocateNet(){
                 if( watermark1 <= NetsInfo_[Net->second].StartPoint_.first &&
                     NetsInfo_[Net->second].EndPoint_.first <= watermark2 &&
                     allValuesNotMinusOne(VCG_, Net->second) 
+                    // allValuesNotOne(VCG_, Net->second)
                     ){
 
                     deleteEdges(VCG_, Net->second);
@@ -221,8 +248,9 @@ void Channel::allocateNet(){
                 }
                 else if( watermark1 - 1 <= NetsInfo_[Net->second].StartPoint_.first &&
                          NetsInfo_[Net->second].EndPoint_.first <= watermark2 &&
-                         allValuesNotMinusOne(VCG_, Net->second) && 
-                         checkSameNetSeries(prevNet, Net->second)
+                         checkSameNetSeries(prevNet, Net->second) &&
+                         allValuesNotMinusOne(VCG_, Net->second) 
+                        //  allValuesNotOne(VCG_, Net->second)
                         ){
                     deleteEdges(VCG_, Net->second);
                     NetsInfo_[Net->second].TrackName_ = TrackName;

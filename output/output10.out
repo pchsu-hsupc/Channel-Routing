@@ -1,0 +1,187 @@
+Channel density: 34
+Net 1
+C31 56 61
+Net 2
+C24 41 50
+C7 50 70
+Dogleg 50
+Net 3
+C30 4 7
+C11 7 16
+Dogleg 7
+B1 16 17
+Dogleg 16
+C7 17 30
+Dogleg 17
+C8 30 40
+Dogleg 30
+Net 4
+T0 4 13
+C3 13 52
+Dogleg 13
+C1 52 65
+Dogleg 52
+Net 5
+C34 1 27
+C10 27 32
+Dogleg 27
+Net 6
+C26 19 74
+C34 74 80
+Dogleg 74
+Net 7
+C24 21 35
+C22 35 44
+Dogleg 35
+B1 44 54
+Dogleg 44
+C8 54 70
+Dogleg 54
+C33 70 81
+Dogleg 70
+Net 8
+C21 11 39
+C28 39 66
+Dogleg 39
+T0 66 71
+Dogleg 66
+Net 9
+C33 1 10
+C23 10 61
+Dogleg 10
+C30 61 72
+Dogleg 61
+C31 72 78
+Dogleg 72
+Net 10
+C18 46 76
+Net 11
+C9 6 52
+C4 52 83
+Dogleg 52
+Net 12
+C28 5 37
+C31 37 55
+Dogleg 37
+T0 55 65
+Dogleg 55
+C2 65 79
+Dogleg 65
+Net 13
+C13 25 47
+B0 47 55
+Dogleg 47
+C3 55 69
+Dogleg 55
+Net 14
+B1 18 19
+C25 19 82
+Dogleg 19
+Net 15
+B0 42 43
+T0 43 54
+Dogleg 43
+C15 54 64
+Dogleg 54
+Net 16
+C18 12 45
+C22 45 60
+Dogleg 45
+Net 17
+C16 23 80
+Net 18
+C14 9 63
+Net 19
+C20 11 57
+Net 20
+C8 17 27
+B0 27 40
+Dogleg 27
+C7 40 42
+Dogleg 40
+C21 42 71
+Dogleg 42
+C32 71 73
+Dogleg 71
+Net 21
+B1 8 15
+C17 15 67
+Dogleg 15
+Net 22
+C1 24 37
+Net 23
+C31 3 36
+C33 36 59
+Dogleg 36
+C6 59 75
+Dogleg 59
+Net 24
+C30 2 3
+Net 25
+C2 13 24
+C15 24 51
+Dogleg 24
+C24 51 76
+Dogleg 51
+Net 26
+C12 16 62
+C33 62 69
+Dogleg 62
+Net 27
+C10 49 79
+Net 28
+C10 0 7
+B0 7 26
+Dogleg 7
+C11 26 74
+Dogleg 26
+C23 74 75
+Dogleg 74
+C32 75 82
+Dogleg 75
+Net 29
+C32 2 64
+Net 30
+C15 9 23
+C6 23 53
+Dogleg 23
+C9 53 68
+Dogleg 53
+Net 31
+C30 8 32
+T1 32 34
+Dogleg 32
+C10 34 48
+Dogleg 34
+C13 48 81
+Dogleg 48
+Net 32
+C29 5 77
+Net 33
+C33 29 31
+Net 34
+C7 35 38
+C30 38 58
+Dogleg 38
+C20 58 67
+Dogleg 58
+Net 35
+C5 30 83
+Net 36
+C12 63 77
+Net 37
+T1 0 12
+C19 12 15
+Dogleg 12
+C33 15 28
+Dogleg 15
+C34 28 73
+Dogleg 28
+Net 38
+C19 22 72
+Net 39
+C22 10 14
+C27 14 68
+Dogleg 14
+Net 40
+C22 22 33
