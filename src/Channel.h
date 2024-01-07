@@ -10,13 +10,16 @@
 #include <sstream>
 #include <algorithm>
 
-typedef struct NetInfo_{
+struct NetInfo{
     /* data */
     std::pair<size_t, size_t>   StartPoint_; // first: x-coordinates, second: top 1 or bottom 0
     std::pair<size_t, size_t>   EndPoint_;
     std::string                 TrackName_ = "";
-} NetInfo;
 
+    NetInfo() = default;
+    NetInfo( const std::pair<size_t, size_t>& StartPoint, const std::pair<size_t, size_t>& EndPoint, std::string TrackName = ""):
+        StartPoint_(StartPoint), EndPoint_(EndPoint), TrackName_(TrackName) {}
+};
 
 class Channel
 {
@@ -34,7 +37,6 @@ public:
     size_t                                                                  NumTopTracks_ = 0;
     size_t                                                                  NumButtomTracks_ = 0;
     size_t                                                                  NumAddedTracks_ = 0;
-    /* member functions */
     
     /* constructor & distructor */
     Channel();
@@ -47,8 +49,8 @@ public:
     void allocateNet();
 };
 
-Channel* parseChannelInstance(std::ifstream& input);
-void outputRoutingResult(std::ofstream& output, Channel* channel);
+Channel* parseChannelInstance(std::stringstream& input);
+void outputRoutingResult(std::ofstream& outputfile, Channel* channel);
 void deleteEdges(std::unordered_map<std::string, std::unordered_map<std::string, int>>& VCG, const std::string& NetName);
 bool allValuesNotMinusOne(const std::unordered_map<std::string, std::unordered_map<std::string, int>>& VCG, const std::string& NetName);
 bool allValuesNotOne(const std::unordered_map<std::string, std::unordered_map<std::string, int>>& VCG, const std::string& NetName);

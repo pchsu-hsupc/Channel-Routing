@@ -9,19 +9,24 @@ Channel::~Channel()
 }
 
 void Channel::createNetInfo(){
-    /* parse TopNetIDs_ and BottomNetIDs to 1, 2a, 2b, ...*/
+    /* parse TopNetIDs_ and BottomNetIDs to 1, 2_1, 2_2, ...*/
+    std::string NetName;
     for(size_t n = 1; n <= TopNetIDs_.size(); ++n){
-        std::vector<std::pair<size_t, size_t>> indices = findAllIndices(TopNetIDs_, BottomNetIDs_, n);
-        if (indices.size() == 0) break;
+        auto indices = findAllIndices(TopNetIDs_, BottomNetIDs_, n);
+        if (indices.empty()) break;
+        bool isMulti = indices.size() > 2;
+
         for(size_t i = 0; i <= indices.size() - 2; i++){
-            std::string NetName = std::to_string(n);
-            if(indices.size() > 2){
+            NetName = std::to_string(n);
+            if(isMulti){
                 NetName += "_" + std::to_string(i + 1);
             }
-            NetInfo netInfo;
-            netInfo.StartPoint_ = indices[i];
-            netInfo.EndPoint_ = indices[i + 1];
-            NetsInfo_[NetName] = netInfo;
+
+            NetsInfo_.emplace(
+                std::piecewise_construct,
+                std::forward_as_tuple(NetName),
+                std::forward_as_tuple(indices[i], indices[i + 1])
+            );
         }
         NumNets_++;
     }
@@ -76,7 +81,7 @@ void Channel::constructTracks(){
             intervals.push_back({0, NumPins_ - 1});
             TracksInfo_[TrackName] = intervals;
         }
-        for(const auto& TrackSec : TopBoundaryLine_[TrackName]){
+        for(const auto& TrackSec : TopBoundaryLine_.at(TrackName)){
             bool temp = updateInterval(TracksInfo_[TrackName], TrackSec);
         }
     }
@@ -347,32 +352,36 @@ std::vector<std::pair<size_t, size_t>> findAllIndices(const std::vector<size_t>&
     std::vector<std::pair<size_t, size_t>> indices;
     for (size_t i = 0; i < vec1.size(); ++i) {
         if (vec1[i] == value) {
-            indices.push_back(std::make_pair(i, 1));
+            indices.emplace_back(i, 1);
         }
         else if (vec2[i] == value) {
-            indices.push_back(std::make_pair(i, 0));
+            indices.emplace_back(i, 0);
         }
     }
     return indices;
 }
 
-Channel* parseChannelInstance(std::ifstream& input){
+Channel* parseChannelInstance(std::stringstream& input){
     
     Channel* channel = new Channel();
     std::string line;
     std::string bdline;
     size_t s, e, temp;
+    std::stringstream ss;
 
     /* pass first & last line */
     while (std::getline(input, line)) {
-        std::stringstream ss(line);
-        if (!line.empty() && line[0] == 'T') {
+        if(line.empty()) continue;
+
+        ss.clear();
+        ss.str(line);
+
+        char lineType = line[0];
+
+        if(lineType == 'T' || lineType == 'B'){
             ss >> bdline >> s >> e;
-            channel->TopBoundaryLine_[bdline].push_back({s, e});
-        }
-        else if(!line.empty() && line[0] == 'B'){
-            ss >> bdline >> s >> e;
-            channel->BottomBoundaryLine_[bdline].push_back({s, e});
+            auto& boundaryLine = (lineType == 'T') ? channel->TopBoundaryLine_ : channel->BottomBoundaryLine_;
+            boundaryLine[bdline].push_back({s, e});
         }
         else{
             while (ss >> temp)
@@ -383,8 +392,9 @@ Channel* parseChannelInstance(std::ifstream& input){
         }
     }
     std::getline(input, line);
-    std::stringstream ss2(line);
-    while (ss2 >> temp)
+    ss.clear();
+    ss.str(line);
+    while (ss >> temp)
     {
         channel->BottomNetIDs_.push_back(temp);
     }
@@ -392,7 +402,6 @@ Channel* parseChannelInstance(std::ifstream& input){
     channel->NumTopTracks_ = channel->TopBoundaryLine_.size();
     channel->NumButtomTracks_ = channel->BottomBoundaryLine_.size();
     channel->NumPins_ = channel->TopNetIDs_.size();
-    input.close();
     return channel;
 }
 
@@ -418,16 +427,19 @@ std::vector<std::string> extractSameSeriesNames(const std::unordered_map<std::st
     return result;
 }
 
-void outputRoutingResult(std::ofstream& output, Channel* channel){
+void outputRoutingResult(std::ofstream& outputfile, Channel* channel){
 
+    std::ostringstream output;
     std::vector<std::string> sameSeriesNets;
     std::vector<NetInfo> NetSecInfos;
     NetInfo NetSecInfo;
+    std::string NetSeries;
+    std::string temp;
 
-    output << "Channel density: " << channel->NumAddedTracks_ << std::endl;
+    output << "Channel density: " << channel->NumAddedTracks_ << "\n";
     for(size_t i = 1; i <= channel->NumNets_; ++i){
         std::string NetSeries = std::to_string(i);
-        output << "Net " << NetSeries << std::endl;
+        output << "Net " << NetSeries << "\n";
         sameSeriesNets = extractSameSeriesNames(channel->NetsInfo_, NetSeries);
         std::sort(sameSeriesNets.begin(), sameSeriesNets.end(),
         [](const std::string& a, const std::string& b) {
@@ -464,9 +476,10 @@ void outputRoutingResult(std::ofstream& output, Channel* channel){
 
         NetInfo prevSec;
         for(const auto& Sec: NetSecInfos){
-            output << Sec.TrackName_ << " " << Sec.StartPoint_.first << " " << Sec.EndPoint_.first << std::endl;
-            if(prevSec.TrackName_ != "") output << "Dogleg " << prevSec.EndPoint_.first << std::endl;
+            output << Sec.TrackName_ << " " << Sec.StartPoint_.first << " " << Sec.EndPoint_.first << "\n";
+            if(prevSec.TrackName_ != "") output << "Dogleg " << prevSec.EndPoint_.first << "\n";
             prevSec = Sec;
         }
     }
+    outputfile << output.str();
 }

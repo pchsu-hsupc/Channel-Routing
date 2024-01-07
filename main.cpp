@@ -3,6 +3,7 @@
 #include <limits>
 #include <time.h>
 #include <cstdlib>
+#include <chrono>
 #include "src/Channel.h"
 using namespace std;
 
@@ -17,12 +18,16 @@ int main(int argc, char* argv[]){
         exit(1);
     }
 
-    Channel* channel = parseChannelInstance(input);
+    std::stringstream buffer;
+    buffer << input.rdbuf();
+    input.close();
+
+    Channel* channel = parseChannelInstance(buffer);
     channel->createNetInfo();
     channel->createVCG();
     channel->constructTracks();
     channel->allocateNet();
     outputRoutingResult(output, channel);
-    std::cout << "Finish Line !!!!" << std::endl;
+
     return 0;   
 }
