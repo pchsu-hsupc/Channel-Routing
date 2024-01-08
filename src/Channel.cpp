@@ -118,10 +118,10 @@ void Channel::allocateNet(){
     /* fill in top tracks */
     int Start = NumTopTracks_ - 1;
     int End = 0;
-    for (int i = Start; i >= End; i--)
+    for (int n = Start; n >= End; n--)
     {
-        TrackName = "T" + std::to_string(i);
-        if(TracksInfo_[TrackName].size() == 0) continue;
+        TrackName = "T" + std::to_string(n);
+        if(TracksInfo_[TrackName].empty()) continue;
         watermark1 = 0;
         watermark2 = 0;
         for (size_t i = 0; i < TracksInfo_[TrackName].size(); ++i){
@@ -132,27 +132,27 @@ void Channel::allocateNet(){
             }
 
             /* every net try this interval */
-            auto Net = sortedNets.begin();
-            while(Net != sortedNets.end()){
-                if( watermark1 <= NetsInfo_[Net->second].StartPoint_.first &&
-                    NetsInfo_[Net->second].EndPoint_.first <= watermark2 && 
+            for (auto Net = sortedNets.begin(); Net != sortedNets.end(); ){
+                auto& netinfo = NetsInfo_[Net->second];
+                if( watermark1 <= netinfo.StartPoint_.first &&
+                    netinfo.EndPoint_.first <= watermark2 && 
                     allValuesNotMinusOne(VCG_, Net->second) ){
 
                     deleteEdges(VCG_, Net->second);
-                    NetsInfo_[Net->second].TrackName_ = TrackName;
-                    std::array<size_t, 2> TrackSec = {NetsInfo_[Net->second].StartPoint_.first, NetsInfo_[Net->second].EndPoint_.first};
+                    netinfo.TrackName_ = TrackName;
+                    std::array<size_t, 2> TrackSec = {netinfo.StartPoint_.first, netinfo.EndPoint_.first};
                     if(!updateInterval(TracksInfo_[TrackName], TrackSec)) i--;
                     Net = sortedNets.erase(Net);
                     break;
                 }
-                else if( watermark1 - 1 <= NetsInfo_[Net->second].StartPoint_.first &&
-                         NetsInfo_[Net->second].EndPoint_.first <= watermark2 &&
+                else if( watermark1 - 1 <= netinfo.StartPoint_.first &&
+                         netinfo.EndPoint_.first <= watermark2 &&
                          checkSameNetSeries(prevNet, Net->second) &&
                          allValuesNotMinusOne(VCG_, Net->second) 
                         ){
                     deleteEdges(VCG_, Net->second);
-                    NetsInfo_[Net->second].TrackName_ = TrackName;
-                    std::array<size_t, 2> TrackSec = {NetsInfo_[Net->second].StartPoint_.first, NetsInfo_[Net->second].EndPoint_.first};
+                    netinfo.TrackName_ = TrackName;
+                    std::array<size_t, 2> TrackSec = {netinfo.StartPoint_.first, netinfo.EndPoint_.first};
                     if(!updateInterval(TracksInfo_[TrackName], TrackSec)) i--;
                     prevNet = Net->second;
                     Net = sortedNets.erase(Net);
@@ -168,8 +168,8 @@ void Channel::allocateNet(){
     /* fill in buttom tracks */
     Start = NumButtomTracks_ - 1;
     End = 0;
-    for(int i = Start; i >= End; i--){
-        TrackName = "B" + std::to_string(i);
+    for(int n = Start; n >= End; n--){
+        TrackName = "B" + std::to_string(n);
         if(TracksInfo_[TrackName].size() == 0) continue;
         watermark1 = 0;
         watermark2 = 0;
@@ -182,27 +182,27 @@ void Channel::allocateNet(){
             }
 
             /* every net try this interval */
-            auto Net = sortedNets.begin();
-            while(Net != sortedNets.end()){
-                if( watermark1 <= NetsInfo_[Net->second].StartPoint_.first &&
-                    NetsInfo_[Net->second].EndPoint_.first <= watermark2 &&
+            for (auto Net = sortedNets.begin(); Net != sortedNets.end(); ){
+                auto& netinfo = NetsInfo_[Net->second];
+                if( watermark1 <= netinfo.StartPoint_.first &&
+                    netinfo.EndPoint_.first <= watermark2 &&
                     allValuesNotOne(VCG_, Net->second) ){
 
                     deleteEdges(VCG_, Net->second);
-                    NetsInfo_[Net->second].TrackName_ = TrackName;
-                    std::array<size_t, 2> TrackSec = {NetsInfo_[Net->second].StartPoint_.first, NetsInfo_[Net->second].EndPoint_.first};
+                    netinfo.TrackName_ = TrackName;
+                    std::array<size_t, 2> TrackSec = {netinfo.StartPoint_.first, netinfo.EndPoint_.first};
                     if(!updateInterval(TracksInfo_[TrackName], TrackSec)) i--;
                     Net = sortedNets.erase(Net);
                     break;
                 }
-                else if( watermark1 - 1 <= NetsInfo_[Net->second].StartPoint_.first &&
-                         NetsInfo_[Net->second].EndPoint_.first <= watermark2 &&
+                else if( watermark1 - 1 <= netinfo.StartPoint_.first &&
+                         netinfo.EndPoint_.first <= watermark2 &&
                          checkSameNetSeries(prevNet, Net->second) &&
                          allValuesNotOne(VCG_, Net->second)
                         ){
                     deleteEdges(VCG_, Net->second);
-                    NetsInfo_[Net->second].TrackName_ = TrackName;
-                    std::array<size_t, 2> TrackSec = {NetsInfo_[Net->second].StartPoint_.first, NetsInfo_[Net->second].EndPoint_.first};
+                    netinfo.TrackName_ = TrackName;
+                    std::array<size_t, 2> TrackSec = {netinfo.StartPoint_.first, netinfo.EndPoint_.first};
                     if(!updateInterval(TracksInfo_[TrackName], TrackSec)) i--;
                     prevNet = Net->second;
                     Net = sortedNets.erase(Net);
@@ -235,31 +235,31 @@ void Channel::allocateNet(){
             }
 
             /* every net try this interval */
-            auto Net = sortedNets.begin();
-            while(Net != sortedNets.end()){
-                if( watermark1 <= NetsInfo_[Net->second].StartPoint_.first &&
-                    NetsInfo_[Net->second].EndPoint_.first <= watermark2 &&
-                    allValuesNotMinusOne(VCG_, Net->second) 
-                    // allValuesNotOne(VCG_, Net->second)
+            for (auto Net = sortedNets.begin(); Net != sortedNets.end(); ){
+                auto& netinfo = NetsInfo_[Net->second];
+                if( watermark1 <= netinfo.StartPoint_.first &&
+                    netinfo.EndPoint_.first <= watermark2 &&
+                    // allValuesNotMinusOne(VCG_, Net->second) 
+                    allValuesNotOne(VCG_, Net->second)
                     ){
 
                     deleteEdges(VCG_, Net->second);
-                    NetsInfo_[Net->second].TrackName_ = TrackName;
-                    std::array<size_t, 2> TrackSec = {NetsInfo_[Net->second].StartPoint_.first, NetsInfo_[Net->second].EndPoint_.first};
+                    netinfo.TrackName_ = TrackName;
+                    std::array<size_t, 2> TrackSec = {netinfo.StartPoint_.first, netinfo.EndPoint_.first};
                     if(!updateInterval(TracksInfo_[TrackName], TrackSec)) i--;
                     prevNet = Net->second;
                     Net = sortedNets.erase(Net);
                     break;
                 }
-                else if( watermark1 - 1 <= NetsInfo_[Net->second].StartPoint_.first &&
-                         NetsInfo_[Net->second].EndPoint_.first <= watermark2 &&
+                else if( watermark1 - 1 <= netinfo.StartPoint_.first &&
+                         netinfo.EndPoint_.first <= watermark2 &&
                          checkSameNetSeries(prevNet, Net->second) &&
-                         allValuesNotMinusOne(VCG_, Net->second) 
-                        //  allValuesNotOne(VCG_, Net->second)
+                        //  allValuesNotMinusOne(VCG_, Net->second) 
+                         allValuesNotOne(VCG_, Net->second)
                         ){
                     deleteEdges(VCG_, Net->second);
-                    NetsInfo_[Net->second].TrackName_ = TrackName;
-                    std::array<size_t, 2> TrackSec = {NetsInfo_[Net->second].StartPoint_.first, NetsInfo_[Net->second].EndPoint_.first};
+                    netinfo.TrackName_ = TrackName;
+                    std::array<size_t, 2> TrackSec = {netinfo.StartPoint_.first, netinfo.EndPoint_.first};
                     if(!updateInterval(TracksInfo_[TrackName], TrackSec)) i--;
                     prevNet = Net->second;
                     Net = sortedNets.erase(Net);
@@ -321,32 +321,29 @@ bool allValuesNotOne(const std::unordered_map<std::string, std::unordered_map<st
     return true;
 }
 
-bool updateInterval(std::vector<std::array<size_t, 2>>& intervals, const std::array<size_t, 2>& TrackSec){
-    bool isBigger = false;
-    std::vector<std::array<size_t, 2>> newIntervals;
-    for(const auto& interval : intervals){
-        if(TrackSec[1] < interval[0] || interval[1] < TrackSec[0]){
-            newIntervals.push_back(interval);
-            continue;
-        }
-        else{
-            if(interval[0] < TrackSec[0] && TrackSec[1] < interval[1]){
-                newIntervals.push_back({interval[0], TrackSec[0] - 1});
-                newIntervals.push_back({TrackSec[1] + 1, interval[1]});
-                isBigger = true;
+bool updateInterval(std::vector<std::array<size_t, 2>>& intervals, const std::array<size_t, 2>& TrackSec) {
+    std::vector<std::array<size_t, 2>> updatedIntervals;
+    updatedIntervals.reserve(intervals.size() + 1);
+
+    for (const auto& interval : intervals) {
+        if (TrackSec[1] < interval[0] || interval[1] < TrackSec[0]) {
+            updatedIntervals.push_back(interval);
+
+        } else {
+            if (interval[0] < TrackSec[0]) {
+                updatedIntervals.push_back({interval[0], TrackSec[0] - 1});
             }
-            else if(interval[0] < TrackSec[0] && interval[1] <= TrackSec[1]){
-                newIntervals.push_back({interval[0], TrackSec[0] - 1});
-            }
-            else if(TrackSec[0] <= interval[0] && TrackSec[1] < interval[1]){
-                newIntervals.push_back({TrackSec[1] + 1, interval[1]});
+            if (TrackSec[1] < interval[1]) {
+                updatedIntervals.push_back({TrackSec[1] + 1, interval[1]});
             }
         }
     }
-    std::sort(newIntervals.begin(), newIntervals.end());
-    intervals = newIntervals;
+
+    bool isBigger = updatedIntervals.size() != intervals.size();
+    intervals.swap(updatedIntervals);
     return isBigger;
 }
+
 
 std::vector<std::pair<size_t, size_t>> findAllIndices(const std::vector<size_t>& vec1, const std::vector<size_t>& vec2, int value) {
     std::vector<std::pair<size_t, size_t>> indices;
@@ -456,9 +453,9 @@ void outputRoutingResult(std::ofstream& outputfile, Channel* channel){
         for(const auto& Net : sameSeriesNets){
             if(NetSecInfo.TrackName_ != channel->NetsInfo_.at(Net).TrackName_){
                 if(NetSecInfo.TrackName_ != ""){
-                    if(NetSecInfo.TrackName_[0] == 'C'){
-                        NetSecInfo.TrackName_ = "C" + std::to_string(channel->NumAddedTracks_ - std::stoi(NetSecInfo.TrackName_.substr(1)) + 1);
-                    }
+                    // if(NetSecInfo.TrackName_[0] == 'C'){
+                    //     NetSecInfo.TrackName_ = "C" + std::to_string(channel->NumAddedTracks_ - std::stoi(NetSecInfo.TrackName_.substr(1)) + 1);
+                    // }
                     NetSecInfos.push_back(NetSecInfo);
                 }
                 NetSecInfo.TrackName_ = channel->NetsInfo_.at(Net).TrackName_;
@@ -469,9 +466,9 @@ void outputRoutingResult(std::ofstream& outputfile, Channel* channel){
                 NetSecInfo.EndPoint_ = channel->NetsInfo_.at(Net).EndPoint_;
             }
         }
-        if(NetSecInfo.TrackName_[0] == 'C'){
-            NetSecInfo.TrackName_ = "C" + std::to_string(channel->NumAddedTracks_ - std::stoi(NetSecInfo.TrackName_.substr(1)) + 1);
-        }
+        // if(NetSecInfo.TrackName_[0] == 'C'){
+        //     NetSecInfo.TrackName_ = "C" + std::to_string(channel->NumAddedTracks_ - std::stoi(NetSecInfo.TrackName_.substr(1)) + 1);
+        // }
         NetSecInfos.push_back(NetSecInfo);
 
         NetInfo prevSec;
