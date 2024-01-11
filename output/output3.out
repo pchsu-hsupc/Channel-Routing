@@ -1,10 +1,8 @@
-Channel density: 5
+Channel density: 4
 Net 1
 T0 0 4
 Net 2
-C3 1 9
-C1 9 12
-Dogleg 9
+C2 1 12
 Net 3
 C4 2 5
 Net 4
@@ -12,20 +10,20 @@ T1 4 6
 C4 6 12
 Dogleg 6
 Net 5
-C2 1 8
-C5 8 10
+C1 1 8
+C3 8 10
 Dogleg 8
 Net 6
-C1 0 2
+C3 0 2
 Net 7
-C1 3 6
+C3 3 6
 B0 6 7
 Dogleg 6
 Net 8
 B0 8 10
 Net 9
-C1 14 15
+C3 14 15
 Net 10
-C2 13 14
+C4 13 14
 Net 11
 T0 13 15

@@ -1,169 +1,185 @@
-Channel density: 35
+Channel density: 34
 Net 1
-C35 56 61
+C31 56 61
 Net 2
-C31 41 70
+C24 41 50
+C7 50 70
+Dogleg 50
 Net 3
-C2 4 16
+C30 4 7
+C11 7 16
+Dogleg 7
 B1 16 17
 Dogleg 16
-C24 17 40
+C7 17 30
 Dogleg 17
+C8 30 40
+Dogleg 30
 Net 4
 T0 4 13
-C19 13 52
+C3 13 52
 Dogleg 13
-C3 52 65
+C1 52 65
 Dogleg 52
 Net 5
-C26 1 31
-C25 31 32
-Dogleg 31
+C34 1 27
+C10 27 32
+Dogleg 27
 Net 6
-C30 19 74
-C17 74 80
+C26 19 74
+C34 74 80
 Dogleg 74
 Net 7
-C29 21 44
+C24 21 35
+C22 35 44
+Dogleg 35
 B0 44 54
 Dogleg 44
-C32 54 81
+C8 54 70
 Dogleg 54
+C33 70 81
+Dogleg 70
 Net 8
-C11 11 33
-C25 33 66
-Dogleg 33
+C21 11 39
+C28 39 66
+Dogleg 39
 T0 66 71
 Dogleg 66
 Net 9
-C14 1 21
-C4 21 61
-Dogleg 21
-C28 61 72
+C33 1 10
+C23 10 61
+Dogleg 10
+C30 61 72
 Dogleg 61
-C25 72 78
+C31 72 78
 Dogleg 72
 Net 10
-C22 46 76
+C18 46 76
 Net 11
-C6 6 34
-C26 34 83
-Dogleg 34
+C9 6 52
+C4 52 83
+Dogleg 52
 Net 12
-C4 5 20
-C20 20 55
-Dogleg 20
+C28 5 37
+C31 37 55
+Dogleg 37
 T0 55 65
 Dogleg 55
-C7 65 79
+C2 65 79
 Dogleg 65
 Net 13
-C22 25 39
-C6 39 69
-Dogleg 39
+C13 25 55
+C3 55 69
+Dogleg 55
 Net 14
 B1 18 19
-C2 19 82
+C25 19 82
 Dogleg 19
 Net 15
 B0 42 43
 T0 43 54
 Dogleg 43
-C33 54 64
+C15 54 64
 Dogleg 54
 Net 16
-C1 12 45
-C29 45 60
+C18 12 45
+C22 45 60
 Dogleg 45
 Net 17
 C16 23 80
 Net 18
-C7 9 63
+C14 9 63
 Net 19
-C10 11 57
+C20 11 57
 Net 20
-C25 17 27
+C8 17 27
 B0 27 40
 Dogleg 27
-C17 40 71
+C7 40 42
 Dogleg 40
-C1 71 73
+C21 42 71
+Dogleg 42
+C32 71 73
 Dogleg 71
 Net 21
 B1 8 15
-C9 15 46
+C17 15 67
 Dogleg 15
-C1 46 67
-Dogleg 46
 Net 22
-C17 24 37
+C1 24 37
 Net 23
-C3 3 36
-C11 36 75
+C31 3 36
+C33 36 59
 Dogleg 36
+C10 59 75
+Dogleg 59
 Net 24
-C2 2 3
+C30 2 3
 Net 25
-C18 13 51
+C2 13 24
+C15 24 51
+Dogleg 24
 C24 51 76
 Dogleg 51
 Net 26
-C12 16 25
-C21 25 62
-Dogleg 25
-C18 62 69
+C12 16 62
+C33 62 69
 Dogleg 62
 Net 27
-C14 49 79
+C8 49 53
+C9 53 79
+Dogleg 53
 Net 28
-C1 0 7
+C10 0 7
 B0 7 26
 Dogleg 7
-C12 26 82
+C11 26 74
 Dogleg 26
+C23 74 75
+Dogleg 74
+C32 75 82
+Dogleg 75
 Net 29
-C34 2 64
+C32 2 64
 Net 30
-C8 9 68
+C15 9 23
+C6 23 68
+Dogleg 23
 Net 31
-C27 8 32
+C30 8 32
 T1 32 34
 Dogleg 32
-C27 34 48
+C10 34 57
 Dogleg 34
-C9 48 81
-Dogleg 48
+C13 57 81
+Dogleg 57
 Net 32
-C5 5 77
+C29 5 77
 Net 33
-C31 29 31
+C33 29 31
 Net 34
-C28 35 56
-C18 56 58
-Dogleg 56
-C10 58 67
+C7 35 38
+C30 38 58
+Dogleg 38
+C20 58 67
 Dogleg 58
 Net 35
-C23 30 38
-C3 38 50
-Dogleg 38
-C27 50 83
-Dogleg 50
+C5 30 83
 Net 36
-C4 63 77
+C12 63 77
 Net 37
 T1 0 12
-C9 12 14
+C19 12 15
 Dogleg 12
-C12 14 15
-Dogleg 14
-C15 15 73
+C33 15 28
 Dogleg 15
+C34 28 73
+Dogleg 28
 Net 38
-C14 22 47
-C23 47 72
-Dogleg 47
+C19 22 72
 Net 39
-C13 10 68
+C22 10 14
+C27 14 68
+Dogleg 14
 Net 40
-C28 22 33
+C22 22 33

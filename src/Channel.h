@@ -42,19 +42,38 @@ public:
     Channel();
     ~Channel();
 
+    /* copy assignment operator */
+    Channel& operator=(const Channel& rhs){
+        if(this == &rhs)
+            return *this;
+        TopBoundaryLine_ = rhs.TopBoundaryLine_;
+        BottomBoundaryLine_ = rhs.BottomBoundaryLine_;
+        TopNetIDs_ = rhs.TopNetIDs_;
+        BottomNetIDs_ = rhs.BottomNetIDs_;
+        NetsInfo_ = rhs.NetsInfo_;
+        VCG_ = rhs.VCG_;
+        TracksInfo_ = rhs.TracksInfo_;
+        NumPins_ = rhs.NumPins_;
+        NumNets_ = rhs.NumNets_;
+        NumTopTracks_ = rhs.NumTopTracks_;
+        NumButtomTracks_ = rhs.NumButtomTracks_;
+        return *this;
+    };
+
     /* member functions */
     void createNetInfo();
     void createVCG();
     void constructTracks();
-    void allocateNet();
+    size_t allocateNet(bool isTopDown);
 };
 
 Channel* parseChannelInstance(std::stringstream& input);
-void outputRoutingResult(std::ofstream& outputfile, Channel* channel);
+void outputRoutingResult(std::ofstream& outputfile, Channel* channel, bool isTopDown);
 void deleteEdges(std::unordered_map<std::string, std::unordered_map<std::string, int>>& VCG, const std::string& NetName);
 bool allValuesNotMinusOne(const std::unordered_map<std::string, std::unordered_map<std::string, int>>& VCG, const std::string& NetName);
 bool allValuesNotOne(const std::unordered_map<std::string, std::unordered_map<std::string, int>>& VCG, const std::string& NetName);
 std::vector<std::pair<size_t, size_t>> findAllIndices(const std::vector<size_t>& vec1, const std::vector<size_t>& vec2, int value);
 bool updateInterval(std::vector<std::array<size_t, 2>>& intervals, const std::array<size_t, 2>& TrackSec);
+// void updateInterval(std::vector<std::array<size_t, 2>>& intervals, const std::array<size_t, 2>& TrackSec, size_t& index);
 std::vector<std::string> extractSameSeriesNames(const std::unordered_map<std::string, NetInfo>& NetsInfo, const std::string& series);
 bool checkSameNetSeries(const std::string& NetName1, const std::string& NetName2);

@@ -105,7 +105,7 @@ void Channel::constructTracks(){
     }
 }
 
-void Channel::allocateNet(){
+size_t Channel::allocateNet(bool isTopDown){
     std::string TrackName;
     std::string prevNet;
     size_t      watermark1;
@@ -237,10 +237,18 @@ void Channel::allocateNet(){
             /* every net try this interval */
             for (auto Net = sortedNets.begin(); Net != sortedNets.end(); ){
                 auto& netinfo = NetsInfo_[Net->second];
-                if( watermark1 <= netinfo.StartPoint_.first &&
-                    netinfo.EndPoint_.first <= watermark2 &&
-                    // allValuesNotMinusOne(VCG_, Net->second) 
-                    allValuesNotOne(VCG_, Net->second)
+
+                bool condition = false;
+                if(isTopDown){
+                    condition = allValuesNotMinusOne(VCG_, Net->second);
+                }
+                else{
+                    condition = allValuesNotOne(VCG_, Net->second);
+                }
+
+                if( condition &&
+                    netinfo.EndPoint_.first <= watermark2 && 
+                    (watermark1 <= netinfo.StartPoint_.first || (watermark1 - 1 <= netinfo.StartPoint_.first && checkSameNetSeries(prevNet, Net->second)))
                     ){
 
                     deleteEdges(VCG_, Net->second);
@@ -250,28 +258,48 @@ void Channel::allocateNet(){
                     prevNet = Net->second;
                     Net = sortedNets.erase(Net);
                     break;
-                }
-                else if( watermark1 - 1 <= netinfo.StartPoint_.first &&
-                         netinfo.EndPoint_.first <= watermark2 &&
-                         checkSameNetSeries(prevNet, Net->second) &&
-                        //  allValuesNotMinusOne(VCG_, Net->second) 
-                         allValuesNotOne(VCG_, Net->second)
-                        ){
-                    deleteEdges(VCG_, Net->second);
-                    netinfo.TrackName_ = TrackName;
-                    std::array<size_t, 2> TrackSec = {netinfo.StartPoint_.first, netinfo.EndPoint_.first};
-                    if(!updateInterval(TracksInfo_[TrackName], TrackSec)) i--;
-                    prevNet = Net->second;
-                    Net = sortedNets.erase(Net);
-                    break;
+
                 }
                 else{
                     ++Net;
                 }
+
+                // if( watermark1 <= netinfo.StartPoint_.first &&
+                //     netinfo.EndPoint_.first <= watermark2 &&
+                //     // allValuesNotMinusOne(VCG_, Net->second) 
+                //     allValuesNotOne(VCG_, Net->second)
+                //     ){
+
+                //     deleteEdges(VCG_, Net->second);
+                //     netinfo.TrackName_ = TrackName;
+                //     std::array<size_t, 2> TrackSec = {netinfo.StartPoint_.first, netinfo.EndPoint_.first};
+                //     if(!updateInterval(TracksInfo_[TrackName], TrackSec)) i--;
+                //     prevNet = Net->second;
+                //     Net = sortedNets.erase(Net);
+                //     break;
+                // }
+                // else if( watermark1 - 1 <= netinfo.StartPoint_.first &&
+                //          netinfo.EndPoint_.first <= watermark2 &&
+                //          checkSameNetSeries(prevNet, Net->second) &&
+                //         //  allValuesNotMinusOne(VCG_, Net->second) 
+                //          allValuesNotOne(VCG_, Net->second)
+                //         ){
+                //     deleteEdges(VCG_, Net->second);
+                //     netinfo.TrackName_ = TrackName;
+                //     std::array<size_t, 2> TrackSec = {netinfo.StartPoint_.first, netinfo.EndPoint_.first};
+                //     if(!updateInterval(TracksInfo_[TrackName], TrackSec)) i--;
+                //     prevNet = Net->second;
+                //     Net = sortedNets.erase(Net);
+                //     break;
+                // }
+                // else{
+                //     ++Net;
+                // }
             }
         }
     }
     NumAddedTracks_ = Count;
+    return Count;
 }
 
 bool checkSameNetSeries(const std::string& NetName1, const std::string& NetName2) {
@@ -343,7 +371,6 @@ bool updateInterval(std::vector<std::array<size_t, 2>>& intervals, const std::ar
     intervals.swap(updatedIntervals);
     return isBigger;
 }
-
 
 std::vector<std::pair<size_t, size_t>> findAllIndices(const std::vector<size_t>& vec1, const std::vector<size_t>& vec2, int value) {
     std::vector<std::pair<size_t, size_t>> indices;
@@ -424,7 +451,7 @@ std::vector<std::string> extractSameSeriesNames(const std::unordered_map<std::st
     return result;
 }
 
-void outputRoutingResult(std::ofstream& outputfile, Channel* channel){
+void outputRoutingResult(std::ofstream& outputfile, Channel* channel, bool isTopDown){
 
     std::ostringstream output;
     std::vector<std::string> sameSeriesNets;
@@ -453,9 +480,9 @@ void outputRoutingResult(std::ofstream& outputfile, Channel* channel){
         for(const auto& Net : sameSeriesNets){
             if(NetSecInfo.TrackName_ != channel->NetsInfo_.at(Net).TrackName_){
                 if(NetSecInfo.TrackName_ != ""){
-                    // if(NetSecInfo.TrackName_[0] == 'C'){
-                    //     NetSecInfo.TrackName_ = "C" + std::to_string(channel->NumAddedTracks_ - std::stoi(NetSecInfo.TrackName_.substr(1)) + 1);
-                    // }
+                    if( isTopDown && NetSecInfo.TrackName_[0] == 'C'){
+                        NetSecInfo.TrackName_ = "C" + std::to_string(channel->NumAddedTracks_ - std::stoi(NetSecInfo.TrackName_.substr(1)) + 1);
+                    }
                     NetSecInfos.push_back(NetSecInfo);
                 }
                 NetSecInfo.TrackName_ = channel->NetsInfo_.at(Net).TrackName_;
@@ -466,9 +493,9 @@ void outputRoutingResult(std::ofstream& outputfile, Channel* channel){
                 NetSecInfo.EndPoint_ = channel->NetsInfo_.at(Net).EndPoint_;
             }
         }
-        // if(NetSecInfo.TrackName_[0] == 'C'){
-        //     NetSecInfo.TrackName_ = "C" + std::to_string(channel->NumAddedTracks_ - std::stoi(NetSecInfo.TrackName_.substr(1)) + 1);
-        // }
+        if( isTopDown && NetSecInfo.TrackName_[0] == 'C'){
+            NetSecInfo.TrackName_ = "C" + std::to_string(channel->NumAddedTracks_ - std::stoi(NetSecInfo.TrackName_.substr(1)) + 1);
+        }
         NetSecInfos.push_back(NetSecInfo);
 
         NetInfo prevSec;
